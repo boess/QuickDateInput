@@ -131,6 +131,9 @@ define([
                 
                 // Function from mendix object to set an attribute.
                 var input = this.dateInputNode.value.trim();
+                //strip input from seperators
+                input = input.replace(/[^0-9]/g , "");              
+                
                 var myDate = new Date();
                  
                 if(input.length==="") {
@@ -138,26 +141,32 @@ define([
                 }
                 else if(input.length===4) {
                     //DDMM
-                    myDate = new Date();
-                    logger.debug(this.id + ".4.enter." + myDate);
-                    myDate.setMonth(parseInt(input.substring(2,4)) - 1);
-                    myDate.setDate(input.substring(0,2));
+                    this.month = parseInt(input.substring(2,4)) - 1;
+                    this.date = input.substring(0,2);
+                    this.year12 = null;
+                    this.year34 = null;
                 }
                 else if(input.length===6) {
                     //DDMMYY
-                    myDate = new Date();
-                    myDate.setMonth(parseInt(input.substring(2,4)) - 1);
-                    myDate.setDate(input.substring(0,2));
-                    var currentYear = myDate.getFullYear().toString().substring(0,2);
-                    currentYear = currentYear + input.substring(4,6);
-                    myDate.setFullYear(currentYear);
+                    this.month = parseInt(input.substring(2,4)) - 1;
+                    this.date = input.substring(0,2);
+                    this.year12 = myDate.getFullYear().toString().substring(0,2);
+                    this.year34 = input.substring(4,6);
                 }
                 else if(input.length===8) {
                     //DDMMYYYY
-                    myDate = new Date();
-                    myDate.setMonth(parseInt(input.substring(2,4)) - 1);
-                    myDate.setDate(input.substring(0,2));
-                    myDate.setFullYear(input.substring(4,8));
+                    this.month = parseInt(input.substring(2,4)) - 1;
+                    this.date = input.substring(0,2);
+                    this.year12 = input.substring(4,6);
+                    this.year34 = input.substring(6,8);
+                }
+                
+                if(myDate != "") {
+                    myDate.setDate(this.date);
+                    myDate.setMonth(this.month);
+                    if(this.year12 !== null) {
+                        myDate.setFullYear(this.year12 + this.year34);
+                    }
                 }
                 
                 logger.debug(this.id + "." + myDate);
@@ -168,6 +177,7 @@ define([
                     this._addValidation("Invalid date format");
                 } else {
                     this._contextObj.set(this.date, myDate);
+                    this.dateInputNode.value = (parseInt(myDate.getDate()) + 100).toString().substring(1,3)  + "/" + (parseInt(myDate.getMonth()) + 101).toString().substring(1,3) + "/" + myDate.getFullYear();
                 }
         
             });        
@@ -180,7 +190,6 @@ define([
 
             if (this._contextObj !== null) {
                 dojoStyle.set(this.domNode, "display", "block");
-                
                 this.dateInputNode.value = this._contextObj.get(this.date);
                 
                 dojoHtml.set(this.infoTextNode, this.messageString);
