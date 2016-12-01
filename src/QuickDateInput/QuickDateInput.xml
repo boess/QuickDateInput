@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<widget id="QuickDateInput.widget.QuickDateInput" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+    <name>QuickDateInput</name>
+    <description>Easily and fast input for dates.</description>
+
+    <icon />
+
+    <properties>
+        <property key="date" type="attribute">
+            <caption>Date</caption>
+            <category>Appearance</category>
+            <description>The date to update.</description>
+            <attributeTypes>
+                <attributeType name="DateTime" />
+            </attributeTypes>
+        </property>
+    </properties>
+</widget>
+
