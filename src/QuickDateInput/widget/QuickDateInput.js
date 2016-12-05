@@ -129,6 +129,8 @@ define([
             logger.debug(this.id + "._setupEvents");
             this.connect(this.dateInputNode, "change", function(e) {
                 
+                logger.debug(this.id + "._onChange");
+                
                 // Function from mendix object to set an attribute.
                 var input = this.dateInputNode.value.trim();
                 //strip input from seperators
@@ -138,44 +140,50 @@ define([
                  
                 if(input.length==="") {
                     myDate = "";
+//                    this._contextObj.set(this.date, myDate); //done to force refresh...there must be a better way
+//                    this._contextObj.set(this.date, "");                    
                 }
                 else if(input.length===4) {
                     //DDMM
                     this.month = parseInt(input.substring(2,4)) - 1;
-                    this.date = input.substring(0,2);
+                    this.days = input.substring(0,2);
                     this.year12 = null;
                     this.year34 = null;
                 }
                 else if(input.length===6) {
                     //DDMMYY
                     this.month = parseInt(input.substring(2,4)) - 1;
-                    this.date = input.substring(0,2);
+                    this.days = input.substring(0,2);
                     this.year12 = myDate.getFullYear().toString().substring(0,2);
                     this.year34 = input.substring(4,6);
                 }
                 else if(input.length===8) {
                     //DDMMYYYY
                     this.month = parseInt(input.substring(2,4)) - 1;
-                    this.date = input.substring(0,2);
+                    this.days = input.substring(0,2);
                     this.year12 = input.substring(4,6);
                     this.year34 = input.substring(6,8);
                 }
                 
-                if(myDate != "") {
-                    myDate.setDate(this.date);
+                if(myDate !== "") {
+//                   this._contextObj.set(this.date, myDate);
+                    myDate.setDate(this.days);
                     myDate.setMonth(this.month);
                     if(this.year12 !== null) {
                         myDate.setFullYear(this.year12 + this.year34);
                     }
+                 
                 }
                 
                 logger.debug(this.id + "." + myDate);
+                
                 if (myDate.toString()==="Invalid Date") {
                     myDate = new Date();
                     this._contextObj.set(this.date, myDate); //done to force refresh...there must be a better way
                     this._contextObj.set(this.date, "");
                     this._addValidation("Invalid date format");
                 } else {
+                    logger.debug(this.id + "." + this._contextObj);
                     this._contextObj.set(this.date, myDate);
                     this.dateInputNode.value = (parseInt(myDate.getDate()) + 100).toString().substring(1,3)  + "/" + (parseInt(myDate.getMonth()) + 101).toString().substring(1,3) + "/" + myDate.getFullYear();
                 }
