@@ -33,10 +33,13 @@ define([
     "dojo/text",
     "dojo/html",
     "dojo/_base/event",
-
+    
+    // External libraries
+    "QuickDateInput/lib/moment",
     "QuickDateInput/lib/jquery-1.11.2",
+    
     "dojo/text!QuickDateInput/widget/template/QuickDateInput.html"
-], function (declare, _WidgetBase, _TemplatedMixin, dom, dojoDom, dojoProp, dojoGeometry, dojoClass, dojoStyle, dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoEvent, _jQuery, widgetTemplate) {
+], function (declare, _WidgetBase, _TemplatedMixin, dom, dojoDom, dojoProp, dojoGeometry, dojoClass, dojoStyle, dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoEvent, moment, _jQuery, widgetTemplate) {
     "use strict";
 
     var $ = _jQuery.noConflict(true);
@@ -60,12 +63,6 @@ define([
         _alertDiv: null,
         _readOnly: false,
         
-        //date elements
-        month: null,
-        days: null,
-        year12: null,
-        year34: null,        
-
         // dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
         constructor: function () {
             //Uncomment the following line to enable debug messages
@@ -134,58 +131,50 @@ define([
                 // Function from mendix object to set an attribute.
                 var input = this.dateInputNode.value.trim();
                 //strip input from seperators
-                input = input.replace(/[^0-9]/g , "");              
+                input = input.replace(/[^0-9]/g , "");
                 
-                var myDate = new Date();
-                 
-                if(input.length==="") {
-                    myDate = "";
-//                    this._contextObj.set(this.date, myDate); //done to force refresh...there must be a better way
-//                    this._contextObj.set(this.date, "");                    
+                var myMoment = moment();
+                
+                //date elements
+                var days = null;
+                var month= null;
+                var years= null;        
+                                 
+                if(input.length===0) {
+                    myMoment = "";
                 }
                 else if(input.length===4) {
                     //DDMM
-                    this.month = parseInt(input.substring(2,4)) - 1;
-                    this.days = input.substring(0,2);
-                    this.year12 = null;
-                    this.year34 = null;
+                    days = input.substring(0,2);
+                    month = input.substring(2,4);
+                    years = myMoment.year();
                 }
                 else if(input.length===6) {
                     //DDMMYY
-                    this.month = parseInt(input.substring(2,4)) - 1;
-                    this.days = input.substring(0,2);
-                    this.year12 = myDate.getFullYear().toString().substring(0,2);
-                    this.year34 = input.substring(4,6);
+                    days = input.substring(0,2);
+                    month = input.substring(2,4);
+                    years = myMoment.year().toString().substring(0,2) + input.substring(4,6);
                 }
                 else if(input.length===8) {
                     //DDMMYYYY
-                    this.month = parseInt(input.substring(2,4)) - 1;
-                    this.days = input.substring(0,2);
-                    this.year12 = input.substring(4,6);
-                    this.year34 = input.substring(6,8);
+                    days = input.substring(0,2);
+                    month = input.substring(2,4);
+                    years = input.substring(4,8);
                 }
                 
-                if(myDate !== "") {
-//                   this._contextObj.set(this.date, myDate);
-                    myDate.setDate(this.days);
-                    myDate.setMonth(this.month);
-                    if(this.year12 !== null) {
-                        myDate.setFullYear(this.year12 + this.year34);
-                    }
-                 
+                if(myMoment !== "") {
+                    myMoment = moment(days+month+years, "DDMMYYYY");
                 }
                 
-                logger.debug(this.id + "." + myDate);
-                
-                if (myDate.toString()==="Invalid Date") {
-                    myDate = new Date();
-                    this._contextObj.set(this.date, myDate); //done to force refresh...there must be a better way
+                if (!myMoment.isValid()) {
+                    myMoment = moment();
+                    this._contextObj.set(this.date, myMoment); //done to force refresh...there must be a better way
                     this._contextObj.set(this.date, "");
                     this._addValidation("Invalid date format");
                 } else {
-                    logger.debug(this.id + "." + this._contextObj);
-                    this._contextObj.set(this.date, myDate);
-                    this.dateInputNode.value = this._showDateValue(myDate);
+                    this._contextObj.set(this.date, myMoment);
+                    this.dateInputNode.value = this._showDateValue(myMoment);
+                    this._clearValidations();
                 }
         
             });        
@@ -193,8 +182,12 @@ define([
 
         //Display the date as a readable value
         _showDateValue: function(dateVar) {
-            var dateString = (parseInt(dateVar.getDate()) + 100).toString().substring(1,3)  + "/" + (parseInt(dateVar.getMonth()) + 101).toString().substring(1,3) + "/" + dateVar.getFullYear();
-            return dateString;
+            //return empty string when the date value is empty
+            if(dateVar === "") {
+                return "";
+            }
+            
+            return dateVar.format("DD/MM/YYYY");            
         },
         
         // Rerender the interface.
@@ -204,8 +197,8 @@ define([
 
             if (this._contextObj !== null) {
                 dojoStyle.set(this.domNode, "display", "block");
-                var myDate = new Date(this._contextObj.get(this.date));
-                this.dateInputNode.value = this._showDateValue(myDate);
+                var myMoment = moment(new Date(this._contextObj.get(this.date)));
+                this.dateInputNode.value = this._showDateValue(myMoment);
                 
                 dojoHtml.set(this.infoTextNode, this.messageString);
             } else {
