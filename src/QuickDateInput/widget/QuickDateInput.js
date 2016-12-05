@@ -185,12 +185,18 @@ define([
                 } else {
                     logger.debug(this.id + "." + this._contextObj);
                     this._contextObj.set(this.date, myDate);
-                    this.dateInputNode.value = (parseInt(myDate.getDate()) + 100).toString().substring(1,3)  + "/" + (parseInt(myDate.getMonth()) + 101).toString().substring(1,3) + "/" + myDate.getFullYear();
+                    this.dateInputNode.value = this._showDateValue(myDate);
                 }
         
             });        
         },
 
+        //Display the date as a readable value
+        _showDateValue: function(dateVar) {
+            var dateString = (parseInt(dateVar.getDate()) + 100).toString().substring(1,3)  + "/" + (parseInt(dateVar.getMonth()) + 101).toString().substring(1,3) + "/" + dateVar.getFullYear();
+            return dateString;
+        },
+        
         // Rerender the interface.
         _updateRendering: function (callback) {
             logger.debug(this.id + "._updateRendering");
@@ -198,7 +204,8 @@ define([
 
             if (this._contextObj !== null) {
                 dojoStyle.set(this.domNode, "display", "block");
-                this.dateInputNode.value = this._contextObj.get(this.date);
+                var myDate = new Date(this._contextObj.get(this.date));
+                this.dateInputNode.value = this._showDateValue(myDate);
                 
                 dojoHtml.set(this.infoTextNode, this.messageString);
             } else {
