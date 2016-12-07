@@ -15,7 +15,7 @@ The date is considered to be in the current century.
 ### DDMMYYYY
 There is no information missing.
 
-### Example use
+## Example use
 *All dates are in the DD/MM/YYYY format.*
 
 |System Date|Input|CurrentYear|Output|
@@ -24,3 +24,7 @@ There is no information missing.
 |27/03/2016|2603|false|26/03/2017|
 |27/03/2016|260321|not applicable|26/03/2021|
 |27/03/2016|26032021|not applicable|26/03/2021|
+
+## Validations
+Any seperators used in the input are ignored. The output date uses /'s as seperator.
+Validation errors are shown when the input contains letters or when the input can not result in a valid date (e.g. 29/02/2001).
