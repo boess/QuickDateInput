@@ -56,6 +56,7 @@ define([
 
         // Parameters configured in the Modeler.
         date: "",
+        currentYear: "",
 
         // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
         _handles: null,
@@ -127,27 +128,39 @@ define([
             this.connect(this.dateInputNode, "change", function(e) {
                 
                 logger.debug(this.id + "._onChange");
+
+                var myMoment = moment();
                 
                 // Function from mendix object to set an attribute.
                 var input = this.dateInputNode.value.trim();
+                
+                //check the input for correctness - no letters are allowed                
+                var check = input.match(/[a-z]/i);
+                if(check !== null) {
+                    //found one or more letters
+                    this._contextObj.set(this.date, myMoment); //done to force refresh...there must be a better way
+                    this._contextObj.set(this.date, "");                    
+                    this._addValidation("Letters are not allowed");
+                    return;
+                }
+                
                 //strip input from seperators
                 input = input.replace(/[^0-9]/g , "");
-                
-                var myMoment = moment();
                 
                 //date elements
                 var days = null;
                 var month= null;
                 var years= null;        
-                                 
+                
                 if(input.length===0) {
                     myMoment = "";
                 }
                 else if(input.length===4) {
                     //DDMM
                     days = input.substring(0,2);
-                    month = input.substring(2,4);
+                    month = input.substring(2,4);                    
                     years = myMoment.year();
+
                 }
                 else if(input.length===6) {
                     //DDMMYY
@@ -164,9 +177,24 @@ define([
                 
                 if(myMoment !== "") {
                     myMoment = moment(days+month+years, "DDMMYYYY");
+                    if(!this.currentYear && input.length === 4) {
+                        //DDMM was used and the currentYear boolean was set to false
+                        //we need to check if we need to use the current or next year
+                        var currentDate = moment();
+                        currentDate.hour(0);
+                        currentDate.minute(0);
+                        currentDate.second(0);
+                        currentDate.millisecond(0);
+                        if(myMoment.isBefore(currentDate)) {
+                            myMoment.add(1, "year");
+                        }
+                    }
                 }
                 
-                if (!myMoment.isValid()) {
+                logger.debug(myMoment === "" ? "empty date" : myMoment.format("LLLL"));
+                logger.debug(this.currentYear);
+                
+                if (myMoment !== "" && !myMoment.isValid()) {
                     myMoment = moment();
                     this._contextObj.set(this.date, myMoment); //done to force refresh...there must be a better way
                     this._contextObj.set(this.date, "");

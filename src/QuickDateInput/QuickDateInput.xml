@@ -14,6 +14,11 @@
                 <attributeType name="DateTime" />
             </attributeTypes>
         </property>
+        <property key="currentYear" type="boolean" defaultValue="true">
+            <caption>Current Year</caption>
+            <category>Appearance</category>
+            <description>When this is true and the DDMM format is used (f.e. 2703) the missing year information will be interpreted as the currentYear, otherwise it will be interpreted as the current or next possible date.</description>
+        </property>
     </properties>
 </widget>
 
