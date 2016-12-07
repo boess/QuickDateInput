@@ -67,7 +67,7 @@ define([
         // dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
         constructor: function () {
             //Uncomment the following line to enable debug messages
-            logger.level(logger.DEBUG);                        
+            //logger.level(logger.DEBUG);
             logger.debug(this.id + ".constructor");
             this._handles = [];
         },
@@ -150,6 +150,7 @@ define([
                 var month= null;
                 var years= null;        
                 
+                //choose how to fill the days, month and year based on the lenght of the input
                 if(input.length===0) {
                     myMoment = null;
                 }
@@ -189,13 +190,13 @@ define([
                     }
                 }
                 
-                logger.debug(myMoment === null ? "empty date" : myMoment.format("LLLL"));
-                logger.debug(this.currentYear);
+                logger.debug(this.id + "._onChange" + myMoment === null ? "empty date" : myMoment.format("LLLL"));
                 
                 if (myMoment !== null && !myMoment.isValid()) {
-                    myMoment = moment();
+                    //the date is invalid (e.g. 33 March)
                     this._addValidation("Invalid date");
-                } else {
+                }
+                else {
                     if(myMoment === null) {
                         this._contextObj.set(this.date, "");
                     }                    
@@ -206,12 +207,14 @@ define([
                     this._clearValidations();
                 }
         
-            });       
+            });
+            
             this.connect(this.dateInputNode, "click", function(e) {                
                 logger.debug(this.id + "._onClick");
                 //we want to select the whole input when we click in the field
                 this.dateInputNode.setSelectionRange(0, this.dateInputNode.value.length);
             });
+            
         },
 
         //Display the date as a readable value
