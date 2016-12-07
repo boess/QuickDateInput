@@ -111,7 +111,7 @@ define([
         // mxui.widget._WidgetBase.uninitialize is called when the widget is destroyed. Implement to do special tear-down work.
         uninitialize: function () {
           logger.debug(this.id + ".uninitialize");
-            // Clean up listeners, helper objects, etc. There is no need to remove listeners added with this.connect / this.subscribe / this.own.
+            // Clean up listeners, helper objects, etc. There is no need to remove listeners added with this.connect / this.subscribe / this.own.            
         },
 
         // We want to stop events on a mobile device
@@ -138,8 +138,6 @@ define([
                 var check = input.match(/[a-z]/i);
                 if(check !== null) {
                     //found one or more letters
-                    this._contextObj.set(this.date, myMoment); //done to force refresh...there must be a better way
-                    this._contextObj.set(this.date, "");                    
                     this._addValidation("Letters are not allowed");
                     return;
                 }
@@ -153,7 +151,7 @@ define([
                 var years= null;        
                 
                 if(input.length===0) {
-                    myMoment = "";
+                    myMoment = null;
                 }
                 else if(input.length===4) {
                     //DDMM
@@ -175,7 +173,7 @@ define([
                     years = input.substring(4,8);
                 }
                 
-                if(myMoment !== "") {
+                if(myMoment !== null) {
                     myMoment = moment(days+month+years, "DDMMYYYY");
                     if(!this.currentYear && input.length === 4) {
                         //DDMM was used and the currentYear boolean was set to false
@@ -191,28 +189,36 @@ define([
                     }
                 }
                 
-                logger.debug(myMoment === "" ? "empty date" : myMoment.format("LLLL"));
+                logger.debug(myMoment === null ? "empty date" : myMoment.format("LLLL"));
                 logger.debug(this.currentYear);
                 
-                if (myMoment !== "" && !myMoment.isValid()) {
+                if (myMoment !== null && !myMoment.isValid()) {
                     myMoment = moment();
-                    this._contextObj.set(this.date, myMoment); //done to force refresh...there must be a better way
-                    this._contextObj.set(this.date, "");
-                    this._addValidation("Invalid date format");
+                    this._addValidation("Invalid date");
                 } else {
-                    this._contextObj.set(this.date, myMoment);
+                    if(myMoment === null) {
+                        this._contextObj.set(this.date, "");
+                    }                    
+                    else {
+                        this._contextObj.set(this.date, myMoment);
+                    }                
                     this.dateInputNode.value = this._showDateValue(myMoment);
                     this._clearValidations();
                 }
         
-            });        
+            });       
+            this.connect(this.dateInputNode, "click", function(e) {                
+                logger.debug(this.id + "._onClick");
+                //we want to select the whole input when we click in the field
+                this.dateInputNode.setSelectionRange(0, this.dateInputNode.value.length);
+            });
         },
 
         //Display the date as a readable value
         _showDateValue: function(dateVar) {
             logger.debug(this.id + "._showDateValue");
-            //return empty string when the date value is empty
-            if(dateVar === "") {
+            //return empty string when the date is empty
+            if(dateVar === null) {
                 return "";
             }
             
@@ -226,7 +232,7 @@ define([
 
             if (this._contextObj !== null) {
                 dojoStyle.set(this.domNode, "display", "block");
-                var myMoment = this._contextObj.get(this.date) === "" ? "" : moment(new Date(this._contextObj.get(this.date)));
+                var myMoment = this._contextObj.get(this.date) === "" ? null : moment(new Date(this._contextObj.get(this.date)));
                 this.dateInputNode.value = this._showDateValue(myMoment);
                 
                 dojoHtml.set(this.infoTextNode, this.messageString);
@@ -262,6 +268,7 @@ define([
             logger.debug(this.id + "._clearValidations");
             dojoConstruct.destroy(this._alertDiv);
             this._alertDiv = null;
+            dojoClass.remove(this.domNode, "has-error");
         },
 
         // Show an error message.
@@ -276,6 +283,7 @@ define([
                 "innerHTML": message
             });
             dojoConstruct.place(this._alertDiv, this.domNode);
+            dojoClass.add(this.domNode, "has-error");
         },
 
         // Add a validation.
