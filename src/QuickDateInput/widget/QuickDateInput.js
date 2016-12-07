@@ -210,6 +210,7 @@ define([
 
         //Display the date as a readable value
         _showDateValue: function(dateVar) {
+            logger.debug(this.id + "._showDateValue");
             //return empty string when the date value is empty
             if(dateVar === "") {
                 return "";
@@ -225,7 +226,7 @@ define([
 
             if (this._contextObj !== null) {
                 dojoStyle.set(this.domNode, "display", "block");
-                var myMoment = moment(new Date(this._contextObj.get(this.date)));
+                var myMoment = this._contextObj.get(this.date) === "" ? "" : moment(new Date(this._contextObj.get(this.date)));
                 this.dateInputNode.value = this._showDateValue(myMoment);
                 
                 dojoHtml.set(this.infoTextNode, this.messageString);
@@ -246,13 +247,13 @@ define([
             this._clearValidations();
 
             var validation = validations[0],
-                message = validation.getReasonByAttribute(this.backgroundColor);
+                message = validation.getReasonByAttribute(this.date);
 
             if (this._readOnly) {
-                validation.removeAttribute(this.backgroundColor);
+                validation.removeAttribute(this.date);
             } else if (message) {
                 this._addValidation(message);
-                validation.removeAttribute(this.backgroundColor);
+                validation.removeAttribute(this.date);
             }
         },
 
@@ -309,7 +310,7 @@ define([
 
                 var attrHandle = mx.data.subscribe({
                     guid: this._contextObj.getGuid(),
-                    attr: this.backgroundColor,
+                    attr: this.date,
                     callback: dojoLang.hitch(this, function (guid, attr, attrValue) {
                         this._updateRendering();
                     })
