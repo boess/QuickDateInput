@@ -55,6 +55,8 @@ define([
         _contextObj: null,
         _alertDiv: null,
         _readOnly: false,
+        _monthIdx: null,
+        _daysIdx: null,
 
         // dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
         constructor: function() {
@@ -62,6 +64,24 @@ define([
             logger.level(logger.DEBUG);
             logger.debug(this.id + ".constructor");
             this._handles = [];
+            
+            //determine MM position to check if we need to handle the input as DDMM or MMDD
+            var idx = dojoLocale.format(dojoLocale.parse("30-12-1981", {
+                locale: "nl-nl",
+                selector: "date"
+            }), {selector:"date"}).indexOf("3");
+
+            if(idx > 0) {
+                //MMDD
+                this._monthIdx = 0;
+                this._daysIdx = 2;
+            }
+            else {
+                //DDMM
+                this._monthIdx = 2;
+                this._daysIdx = 0;
+            }
+            logger.debug(this.id + "._constructor_daysIdx=" + this._daysIdx + ";monthIdx=" + this._monthIdx);
         },
 
         // dijit._WidgetBase.postCreate is called after constructing the widget. Implement to do extra setup work.
@@ -112,7 +132,7 @@ define([
                 var check = input.match(/[a-z]/i);
                 if (check !== null) {
                     //found one or more letters
-                    this._addValidation("Letters are not allowed");
+                    this._addValidation("Invalid characters found");
                     return;
                 }
 
@@ -129,21 +149,21 @@ define([
                     myMoment = null;
 
                 } else if (input.length === 4) {
-                    //DDMM
-                    days = input.substring(0, 2);
-                    month = input.substring(2, 4);
+                    //DDMM                    
+                    days = input.substring(this._daysIdx, this._daysIdx+2);
+                    month = input.substring(this._monthIdx, this._monthIdx+2);
                     years = myMoment.year();
 
                 } else if (input.length === 6) {
                     //DDMMYY
-                    days = input.substring(0, 2);
-                    month = input.substring(2, 4);
+                    days = input.substring(this._daysIdx, this._daysIdx+2);
+                    month = input.substring(this._monthIdx, this._monthIdx+2);
                     years = myMoment.year().toString().substring(0, 2) + input.substring(4, 6);
 
                 } else if (input.length === 8) {
                     //DDMMYYYY
-                    days = input.substring(0, 2);
-                    month = input.substring(2, 4);
+                    days = input.substring(this._daysIdx, this._daysIdx+2);
+                    month = input.substring(this._monthIdx, this._monthIdx+2);
                     years = input.substring(4, 8);
                 }
 
@@ -195,8 +215,8 @@ define([
             if (dateVar === null) {
                 return "";
             }
-            logger.debug(this.id + "._showDateValue" + dojoLocale.format(new Date(), {selector:"date", formatLength: "short"}));
-            logger.debug(this.id + "._showDateValue" + dojoLocale.format(dateVar.toDate(), {selector:"date"}));
+            
+            //format the date based on the locale
             return dojoLocale.format(dateVar.toDate(), {selector:"date"});
         },
 
