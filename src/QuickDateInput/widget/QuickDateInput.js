@@ -27,12 +27,13 @@ define([
     "dojo/_base/array",
     "dojo/_base/lang",
     "dojo/html",
+    "dojo/date/locale",
 
     // External libraries
     "QuickDateInput/lib/moment",
 
     "dojo/text!QuickDateInput/widget/template/QuickDateInput.html"
-], function(declare, _WidgetBase, _TemplatedMixin, dojoClass, dojoStyle, dojoConstruct, dojoArray, lang, dojoHtml, moment, widgetTemplate) {
+], function(declare, _WidgetBase, _TemplatedMixin, dojoClass, dojoStyle, dojoConstruct, dojoArray, lang, dojoHtml, dojoLocale, moment, widgetTemplate) {
     "use strict";
 
     // Declare widget's prototype.
@@ -58,6 +59,7 @@ define([
         // dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
         constructor: function() {
             //Uncomment the following line to enable debug messages
+            logger.level(logger.DEBUG);
             logger.debug(this.id + ".constructor");
             this._handles = [];
         },
@@ -193,8 +195,9 @@ define([
             if (dateVar === null) {
                 return "";
             }
-
-            return dateVar.format("DD/MM/YYYY");
+            logger.debug(this.id + "._showDateValue" + dojoLocale.format(new Date(), {selector:"date", formatLength: "short"}));
+            logger.debug(this.id + "._showDateValue" + dojoLocale.format(dateVar.toDate(), {selector:"date"}));
+            return dojoLocale.format(dateVar.toDate(), {selector:"date"});
         },
 
         // Rerender the interface.
