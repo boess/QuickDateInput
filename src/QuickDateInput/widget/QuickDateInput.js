@@ -61,7 +61,7 @@ define([
         // dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
         constructor: function() {
             //Uncomment the following line to enable debug messages
-            logger.level(logger.DEBUG);
+            //logger.level(logger.DEBUG);
             logger.debug(this.id + ".constructor");
             this._handles = [];
             
@@ -183,7 +183,7 @@ define([
                     }
                 }
 
-                logger.debug(this.id + "._onChange" + myMoment === null ? "empty date" : myMoment.format("LLLL"));
+                logger.debug(this.id + "._onChange_date=" + (myMoment === null ? "empty date" : myMoment.format("LLLL")));
 
                 if (myMoment !== null && !myMoment.isValid()) {
                     //the date is invalid (e.g. 33 March)
